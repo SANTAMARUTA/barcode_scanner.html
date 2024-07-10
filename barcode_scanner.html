@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Barcode Scanner</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+  </head>
+  <body>
+    <div id="scanner-container" style="width: 400px; height: 300px;"></div>
+    <div id="result"></div>
+    <script>
+      Quagga.init({
+        inputStream: {
+          type: "LiveStream",
+          constraints: {
+            width: 400,
+            height: 300,
+            facingMode: "environment"
+          },
+          area: {
+            top: "0%",
+            right: "0%",
+            left: "0%",
+            bottom: "0%"
+          },
+        },
+        decoder: {
+          readers: [
+            "code_128_reader",
+            "ean_reader",
+            "ean_8_reader",
+            "code_39_reader",
+            "code_39_vin_reader",
+            "codabar_reader",
+            "upc_reader",
+            "upc_e_reader",
+            "i2of5_reader"
+          ]
+        }
+      }, function(err) {
+        if (err) {
+          console.log(err);
+          return;
+        }
+        console.log("Initialization finished. Ready to start");
+        Quagga.start();
+      });
+
+      Quagga.onDetected(function(result) {
+        var code = result.codeResult.code;
+        document.getElementById("result").innerHTML = "バーコード: " + code;
+        console.log("バーコード: ", code);
+        Quagga.stop();
+
+        // メモしたGoogle Apps ScriptのWebアプリURLを入力
+        var url = 'https://script.google.com/macros/s/AKfycbz6JVQZ6lj-i7TPA2O3YTWoBzvNNxYb1-jIwrQfT5qy5PfZYxJooH70GLldoRtzs9ILCg/exec'; // ここにあなたのWebアプリURLを入力
+        var data = {
+          code: code
+        };
+
+        fetch(url, {
+          method: 'POST',
+          body: JSON.stringify(data),
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+        .then(response => response.text())
+        .then(data => {
+          console.log('Success:', data);
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        });
+
+        setTimeout(() => {
+          Quagga.start();
+        }, 3000);
+      });
+    </script>
+  </body>
+</html>
